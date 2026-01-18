@@ -1,0 +1,889 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Drive-for-Java — Mwaki Denis</title>
+  <meta name="theme-color" content="#0b0b0b" />
+
+  <!-- favicon: CROWN A (inline svg) -->
+  <link rel="icon" href='data:image/svg+xml;utf8,
+    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+      <rect width="100%" height="100%" fill="%230b0b0b"/>
+      <text x="50%" y="54%" text-anchor="middle" fill="%23ffd54a" font-size="30" font-family="Arial" font-weight="700">A</text>
+    </svg>' type="image/svg+xml">
+
+  <!-- Tailwind (for quick, readable UI) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* ---- Theme variables ---- */
+    :root{
+      --red:#ef4444;
+      --green:#22c55e;
+      --muted:#9ca3af;
+      --text:#e5e7eb;
+      --sun:#ffd54a;
+      --sidebar-width: 260px;
+    }
+    html { scroll-behavior: smooth; }
+    body { margin:0; font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial; background:#000; color:var(--text); -webkit-font-smoothing:antialiased; }
+
+    /* ---- Pointer glow (follows mouse; default cursor preserved) ---- */
+    .pointer-glow{ position: fixed; inset: 0; pointer-events: none; z-index:110; }
+    .pointer-dot{ position:absolute; width:140px; height:140px; transform: translate(-50%,-50%); border-radius:50%;
+                 background: radial-gradient(circle at center, rgba(255,210,80,0.12), rgba(34,197,94,0.06) 38%, transparent 60%);
+                 mix-blend-mode: screen; filter: blur(2px); transition: transform .05s linear; }
+
+    /* ---- Music bar (top-most) ---- */
+    .music-bar{
+      position: fixed; top:0; left:0; right:0; z-index:120;
+      display:flex; align-items:center; justify-content:space-between;
+      background: linear-gradient(180deg, rgba(2,2,2,0.96), rgba(6,6,6,0.92));
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      padding:8px 16px;
+    }
+    .volume-slider{ width:120px; }
+
+    /* ---- top nav (under music bar) ---- */
+    .topnav{ position: fixed; left:0; right:0; top:48px; z-index:115;
+             background: linear-gradient(180deg, rgba(2,2,2,0.9), rgba(3,3,3,0.76));
+             border-bottom: 1px solid rgba(255,255,255,0.03); backdrop-filter: blur(6px); }
+    .topnav .inner{ max-width:1180px; margin:0 auto; padding:10px 18px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+
+    /* ---- Sidebar (fixed, does not cover content) ---- */
+    .sidebar{
+      position: fixed; left:16px; top:126px; width:var(--sidebar-width); z-index:108;
+      background: rgba(8,8,8,0.95); border-radius:12px; padding:14px;
+      border:1px solid rgba(255,255,255,0.04); box-shadow: 0 18px 50px rgba(0,0,0,0.6);
+      max-height: calc(100vh - 150px); overflow:auto;
+    }
+    .sidebar img.avatar{ width:92px; height:92px; border-radius:12px; object-fit:cover; border:3px solid var(--green); margin:0 auto 8px; display:block; }
+    .sidebar h3{ text-align:center; color:var(--red); font-weight:800; margin-bottom:4px; }
+    .sidebar p.bio{ text-align:center; color:var(--muted); font-size:13px; margin-bottom:10px; }
+
+    .sidebar a.quick{ display:block; padding:8px 10px; border-radius:10px; color:var(--text); text-decoration:none; margin:6px 0; border:1px solid transparent; }
+    .sidebar a.quick:hover{ border-color: rgba(34,197,94,0.12); transform: translateX(4px); box-shadow: 0 10px 30px rgba(34,197,94,0.05); }
+
+    /* Keep main content shifted when sidebar visible on wide screens */
+    main { margin-top: 128px; }
+    @media(min-width:1100px){ main { margin-left: calc(var(--sidebar-width) + 48px); } }
+    @media(max-width:1099px){ .sidebar{ display:none; } main{ margin-left:0; } .topnav{ top:48px; } }
+
+    /* ---- Sections ---- */
+    section { padding:72px 18px; }
+    .tight { max-width:1180px; margin:0 auto; }
+
+    /* ---- HERO (realistic) ---- */
+    .hero{
+      min-height:88vh; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; text-align:center;
+      padding-top:140px; padding-bottom:60px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.88), rgba(6,6,6,0.98));
+    }
+
+    /* sky at top only */
+    .hero-sky{ position:absolute; left:0; right:0; top:-40px; height:320px; pointer-events:none; z-index:14; }
+    .sun{
+      position:absolute; top:-80px; right:8%; width:320px; height:320px; border-radius:50%;
+      background: radial-gradient(circle at 35% 35%, rgba(255,238,136,0.95) 0%, rgba(255,210,60,0.75) 27%, rgba(255,196,60,0.18) 55%, rgba(255,196,60,0) 70%);
+      filter: blur(2px); mix-blend-mode: screen; z-index:12;
+    }
+    .clouds{ position:absolute; inset:0; height:260px; pointer-events:none; z-index:15; }
+    .cloud{ position:absolute; top:18px; width:560px; height:180px; border-radius:50%;
+      background: radial-gradient(ellipse at 50% 30%, rgba(250,250,250,0.95), rgba(210,210,210,0.78) 60%, rgba(160,160,160,0.34) 80%, rgba(0,0,0,0) 90%);
+      filter: blur(1px); opacity:0.98; animation: cloudMove linear infinite;
+    }
+    .cloud.c1{ left:-600px; animation-duration:100s; }
+    .cloud.c2{ left:-200px; top:28px; width:760px; opacity:0.9; animation-duration:85s; transform:scale(1.05); }
+    .cloud.c3{ left:-980px; top:-10px; width:920px; opacity:0.86; animation-duration:120s; transform:scale(1.25); }
+    @keyframes cloudMove { from { transform: translateX(-30vw); } to { transform: translateX(120vw); } }
+
+    /* rain overlay (canvas) & flash */
+    #rainCanvas{ position:absolute; inset:0; z-index:18; pointer-events:none; }
+    #flash{ position:absolute; inset:0; z-index:19; pointer-events:none; mix-blend-mode: screen; opacity:0; transition: opacity .12s linear; }
+
+    /* trees silhouette bottom */
+    .trees{
+      position:absolute; left:0; right:0; bottom:0; height:180px; z-index:20; pointer-events:none;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="180" viewBox="0 0 1600 180"><g fill="%23000904"><path d="M0 140 C80 90 160 170 320 130 C480 90 640 170 800 120 C960 70 1120 170 1280 110 C1440 50 1600 170 1600 170 L1600 0 L0 0 Z"/></g></svg>') repeat-x bottom/cover;
+      opacity:0.95; filter: drop-shadow(0 -12px 16px rgba(0,0,0,0.6));
+    }
+
+    /* hero content styling */
+    .hero-inner{ position:relative; z-index:22; max-width:980px; margin:0 auto; padding:10px; }
+    .logo-box{ display:inline-block; padding:6px; border-radius:14px;
+               background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+               border:1px solid rgba(255,255,255,0.03);
+               box-shadow: 0 24px 60px rgba(0,0,0,0.6); }
+    .logo-box img{ width:170px; height:170px; object-fit:cover; border-radius:14px; display:block; }
+    h1.hero-title{ font-size:44px; margin-top:14px; color:var(--red); font-weight:900; text-shadow: 0 8px 28px rgba(0,0,0,0.6); }
+    p.hero-sub{ color: rgba(255,255,255,0.88); margin-top:10px; max-width:760px; margin-left:auto; margin-right:auto; }
+    .cta{ display:inline-block; margin-top:16px; padding:10px 18px; border-radius:999px; background: linear-gradient(90deg,var(--red),var(--green)); color:#000; font-weight:700; text-decoration:none; box-shadow:0 10px 40px rgba(0,0,0,0.5); transition: transform .15s ease; }
+    .cta:hover{ transform: translateY(-4px); }
+
+    /* cards/grid */
+    .grid-cards{ display:grid; gap:16px; grid-template-columns: repeat(1, 1fr); }
+    @media(min-width:700px){ .grid-cards{ grid-template-columns: repeat(2, 1fr); } }
+    @media(min-width:1100px){ .grid-cards{ grid-template-columns: repeat(3, 1fr); } }
+    .card{ background: linear-gradient(180deg, rgba(10,10,10,0.92), rgba(22,22,22,0.9)); border-radius:12px; padding:18px; border:1px solid rgba(255,255,255,0.03); box-shadow: 0 12px 36px rgba(0,0,0,0.6); transition: transform .18s ease; }
+    .card:hover{ transform: translateY(-6px); box-shadow: 0 28px 80px rgba(0,0,0,0.7); border-color: rgba(34,197,94,0.08); }
+
+    /* rainforest sections */
+    .rainforest{ position:relative; overflow:hidden; padding:72px 18px; background: linear-gradient(180deg, rgba(0,6,2,0.9), rgba(2,8,3,0.95)); color:#dfffe6; }
+    .canopy{ position:absolute; top:-8px; left:0; right:0; height:120px; background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="120" viewBox="0 0 1600 120"><path fill="%23061205" d="M0 40 C120 10 260 80 420 40 C600 -10 780 90 980 40 C1180 -10 1320 90 1600 40 L1600 0 L0 0 Z"/></svg>') repeat-x; opacity:0.9; z-index:2; pointer-events:none; filter:blur(1px); }
+    .mist{ position:absolute; inset:0; z-index:3; pointer-events:none; background: radial-gradient(800px 300px at 50% 15%, rgba(200,255,220,0.03), transparent 40%); filter: blur(2px); }
+    .firefly{ position:absolute; width:6px; height:6px; background: radial-gradient(circle, rgba(255,255,180,1), rgba(255,255,180,0.7)); border-radius:50%; box-shadow: 0 0 8px rgba(255,255,160,0.75); animation: floaty 6s infinite ease-in-out; }
+    @keyframes floaty { 0%{ transform: translate(0,0);}50%{ transform: translate(24px,-18px);}100%{ transform: translate(-6px,6px);} }
+
+    /* footer & modals */
+    footer{ background: linear-gradient(180deg, rgba(0,0,0,0.95), rgba(6,6,6,0.98)); color:var(--muted); padding:24px 18px; border-top:1px solid rgba(255,255,255,0.03); text-align:center; }
+    .modal-back{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.72); z-index:200; }
+    .modal{ background:#070707; border-radius:12px; padding:20px; max-width:920px; width:92%; max-height:80vh; overflow:auto; border:1px solid rgba(255,255,255,0.04); box-shadow:0 20px 60px rgba(0,0,0,0.8); }
+
+    /* small util classes */
+    .muted{ color:var(--muted); } .small{ font-size:13px; }
+  </style>
+</head>
+<body>
+
+  <!-- pointer glow -->
+  <div class="pointer-glow"><div id="pointerDot" class="pointer-dot"></div></div>
+
+  <!-- Music bar -->
+  <div class="music-bar" aria-label="Music and audio controls">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <img src="https://github.com/anshumanjadiya1102.png" alt="avatar" style="width:36px;height:36px;border-radius:8px;border:2px solid var(--green);object-fit:cover;" />
+      <div>
+        <div style="font-weight:800;color:var(--red);font-size:14px;">Drive-for-Java</div>
+        <div class="small muted">Mwaki Denis</div>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <button id="masterMute" class="text-sm muted" style="background:transparent;border:1px solid rgba(255,255,255,0.04);padding:8px;border-radius:10px;">🔇 Mute</button>
+
+      <div style="display:flex; align-items:center; gap:8px;">
+        <label class="small muted">Nature</label>
+        <input id="natureVol" type="range" min="0" max="100" value="70" class="volume-slider" />
+      </div>
+
+      <div style="display:flex; align-items:center; gap:8px;">
+        <label class="small muted">Music</label>
+        <input id="musicVol" type="range" min="0" max="100" value="36" class="volume-slider" />
+      </div>
+
+      <button id="musicPlay" style="background:linear-gradient(90deg,var(--red),var(--green));border:none;padding:8px 12px;border-radius:10px;font-weight:700;color:#000;">Play Music</button>
+    </div>
+  </div>
+
+  <!-- Topnav -->
+  <div class="topnav" role="navigation" aria-label="Top navigation">
+    <div class="inner">
+      <div style="display:flex; gap:12px; align-items:center;">
+        <img src="https://github.com/anshumanjadiya1102.png" alt="avatar" style="width:44px;height:44px;border-radius:10px;border:2px solid var(--green);object-fit:cover;" />
+        <div>
+          <div style="font-weight:800;color:var(--red);">Drive-for-Java</div>
+          <div class="small muted">Mwaki Denis — Java & Web</div>
+        </div>
+      </div>
+      <div style="display:flex; gap:12px; align-items:center;">
+        <a href="#projects" class="small muted">Projects</a>
+        <a href="#blog" class="small muted">Blogs</a>
+        <a href="#contact" class="small muted">Contact</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" aria-label="GitHub profile sidebar">
+    <!-- profile image fetched live from GitHub -->
+    <img class="avatar" src="https://github.com/anshumanjadiya1102.png" alt="Mwaki Denis" />
+    <h3>Mwaki Denis</h3>
+    <p class="bio small">Drive-for-Java • Java • Python • Web</p>
+
+    <!-- Highlights (auto-updating images) -->
+    <div style="margin-top:8px;">
+     <!-- Profile Views -->
+<img src="https://komarev.com/ghpvc/?username=mwakidenis&color=orange&style=flat-square" alt="Profile Views" />
+      <br>
+
+<!-- GitHub Followers -->
+<a href="https://github.com/mwakidenis">
+  <img src="https://img.shields.io/github/followers/anshumanjadiya1102?label=Followers&style=social" alt="GitHub Followers" />
+</a>
+      <br>
+
+<!-- GitHub Stars -->
+<a href="https://github.com/mwakidenis">
+  <img src="https://img.shields.io/github/stars/anshumanjadiya1102?label=Stars&style=social" alt="GitHub Stars" />
+</a>
+      <br>
+
+<!-- Pull Requests Badge -->
+<a href="https://github.com/mwakidenis/Opensource-practice/pulls">
+  <img src="https://img.shields.io/github/issues-pr/recodehive/Opensource-practice" alt="Pull Requests Badge" />
+</a>
+      <br>
+
+<!-- Drive-for-Java -->
+<img src="https://img.shields.io/badge/Drive--for--Java-Open%20Source%20Community-00ccff?style=for-the-badge&logo=github&logoColor=white" alt="Drive-for-Java Badge" />
+      <br>
+
+<!-- RecordHive -->
+<img src="https://img.shields.io/badge/Organization-RecordHive-6a5acd?style=for-the-badge&logo=apachespark&logoColor=white" alt="RecordHive Badge" />
+      <br>
+
+<!-- Awesome -->
+<a href="https://github.com//mwakidenis/blob/master/sources/awesome.md">
+  <img src="https://awesome.re/badge.svg" alt="Awesome Badge" />
+</a>
+
+    </div>
+
+    <!-- Achievements -->
+    <div style="margin-top:12px;">
+      <div style="font-weight:700;color:var(--red);">Achievements</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">
+        <img src="https://github.githubassets.com/images/modules/profile/achievements/pull-shark-default.png" alt="Pull Shark" width="48" />
+        <img src="https://github.githubassets.com/images/modules/profile/achievements/pair-extraordinaire-default.png" alt="Pair Extraordinaire" width="48" />
+        <img src="https://github.githubassets.com/images/modules/profile/achievements/galaxy-brain-default.png" alt="Galaxy Brain" width="48" />
+        <img src="https://github.githubassets.com/images/modules/profile/achievements/yolo-default.png" alt="YOLO" width="48" />
+        <img src="https://github.githubassets.com/images/modules/profile/achievements/quickdraw-default.png" alt="Quickdraw" width="48" />
+      </div>
+    </div>
+    </div>
+
+    <!-- Quick links -->
+    <div style="margin-top:12px;">
+      <div style="font-weight:700; color:var(--muted); margin-bottom:6px;">Quick</div>
+      <a class="quick" href="#projects">🚀 Projects</a>
+      <a class="quick" href="#followers">🌴 Followers</a>
+      <a class="quick" href="#blog">📝 Blogs</a>
+      <a class="quick" href="#contact">📬 Contact</a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main>
+
+    <!-- HERO (realistic: clouds + sun top-right, rain, lightning, trees at bottom) -->
+    <header id="home" class="hero" role="banner" aria-label="Hero with realistic weather">
+      <div class="hero-sky" aria-hidden="true">
+        <div class="sun"></div>
+        <div class="clouds" aria-hidden="true">
+          <div class="cloud c1"></div>
+          <div class="cloud c2"></div>
+          <div class="cloud c3"></div>
+        </div>
+      </div>
+
+      <!-- rain canvas (visuals) -->
+      <canvas id="rainCanvas"></canvas>
+
+      <!-- lightning flash -->
+      <div id="flash" aria-hidden="true"></div>
+
+      <!-- trees silhouette bottom -->
+      <div class="trees" aria-hidden="true"></div>
+
+      <!-- hero content -->
+      <div class="hero-inner">
+        <div class="logo-box">
+          <!-- HERO IMAGE: embedded Base64 data (your uploaded 225169841.jpg) -->
+           <img class="avatar" src="https://github.com/anshumanjadiya1102.png" alt="Mwaki Denis" />
+        </div>
+
+        <h1 class="hero-title">Mwaki Denis</h1>
+        <p class="hero-sub">🌱 Learning Java • 📫 Building apps & developer tools • 🔭 Exploring HTML, Python & web experiments — Drive-for-Java</p>
+
+        <div style="margin-top:12px;">
+          <a class="cta" href="#projects">Explore My Work ↓</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- ABOUT -->
+    <section id="about" class="tight section">
+      <div style="display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap;">
+        <div style="flex:1 1 360px;">
+          <div class="card">
+            <div style="font-weight:800; color:var(--red); font-size:18px;">About Me</div>
+            <p class="muted small" style="margin-top:8px;">
+              I’m <strong>Mwaki Denis</strong> — creator of Drive-for-Java. I build Java apps, CLI tools, small games, and share my learning publicly. 
+            </p>
+            <ul class="muted small" style="margin-top:8px;">
+              <li>🌱 Learning: Java, algorithms, design patterns</li>
+              <li>💻 Building: apps, games, developer tooling</li>
+              <li>🛠 Tools: Git, Maven, Vercel</li>
+            </ul>
+          </div>
+        </div>
+
+        <div style="flex:1 1 280px;">
+          <div class="card">
+            <div style="font-weight:700; color:var(--green);">Quick Links</div>
+            <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
+              <a class="small muted" href="https://github.com/anshumanjadiya1102" target="_blank">GitHub</a>
+              <a class="small muted" href="https://gitlab.com/anshumanjadiya1102" target="_blank">GitLab</a>
+              <a class="small muted" href="https://dev.to/anshumanjadiya1102" target="_blank">Dev.to</a>
+              <a class="small muted" href="mailto:anshuman.jadiya03@gmail.com">Email</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TECH STACK -->
+    <section id="stack" class="tight section" style="padding-top:26px;">
+      <h2 style="color:var(--green); font-weight:800; margin-bottom:12px;">Tech Stack</h2>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <!-- Your shields (these are external image badges that auto-update) -->
+       <img src="https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E" alt="JavaScript">
+<img src="https://img.shields.io/badge/css3-%231572B6.svg?style=for-the-badge&logo=css3&logoColor=white" alt="CSS3">
+<img src="https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript">
+<img src="https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java">
+<img src="https://img.shields.io/badge/html5-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white" alt="HTML5">
+<img src="https://img.shields.io/badge/PowerShell-%235391FE.svg?style=for-the-badge&logo=powershell&logoColor=white" alt="PowerShell">
+<img src="https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54" alt="Python">
+<img src="https://img.shields.io/badge/vercel-%23000000.svg?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel">
+<img src="https://img.shields.io/badge/Apache%20Maven-C71A36?style=for-the-badge&logo=Apache%20Maven&logoColor=white" alt="Apache Maven">
+<img src="https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white" alt="GitHub">
+<img src="https://img.shields.io/badge/gitlab-%23181717.svg?style=for-the-badge&logo=gitlab&logoColor=white" alt="GitLab">
+<img src="https://img.shields.io/badge/bitbucket-%230047B3.svg?style=for-the-badge&logo=bitbucket&logoColor=white" alt="Bitbucket">
+<img src="https://img.shields.io/badge/git-%23F05033.svg?style=for-the-badge&logo=git&logoColor=white" alt="Git">
+<img src="https://img.shields.io/badge/jira-%230A0FFF.svg?style=for-the-badge&logo=jira&logoColor=white" alt="Jira">
+
+      </div>
+    </section>
+
+    <!-- STATS -->
+    <section id="stats" class="tight section" style="padding-top:26px;">
+      <h2 style="color:var(--red); font-weight:800; margin-bottom:12px;">GitHub Stats (auto-updating images)</h2>
+      <div style="display:grid; gap:12px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+        <img src="https://github-readme-stats.vercel.app/api?username=mwakidenis&theme=dark&hide_border=false&include_all_commits=true&count_private=true" alt="github stats" style="width:100%; border-radius:10px;" />
+        <img src="https://nirzak-streak-stats.vercel.app/?user=mwakidenis&theme=dark&hide_border=false" alt="streak" style="width:100%; border-radius:10px;" />
+        <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=mwakidenis&theme=dark&hide_border=false&layout=compact" alt="top langs" style="width:100%; border-radius:10px;" />
+        <img src="https://github-readme-activity-graph.vercel.app/graph?username=mwakidenis&bg_color=0d1117&color=ffffff&line=ff6f3c&point=ffffff&area=true&hide_border=true" alt="activity" style="width:100%; border-radius:10px;" />
+      </div>
+    </section>
+
+    <!-- PROJECTS -->
+    <section id="projects" class="tight section" style="padding-top:26px;">
+      <h2 style="color:var(--green); font-weight:800; margin-bottom:12px;">Projects</h2>
+      <div class="grid-cards">
+        <div class="card">
+          <div style="font-weight:800; color:var(--green);">Calculator</div>
+          <div class="muted small" style="margin-top:6px;">A Java calculator app (basic & scientific).</div>
+          <a class="btn" href="https://github.com/mwakidenis" target="_blank" style="background:var(--red); color:#fff; padding:8px 10px; border-radius:8px; display:inline-block; margin-top:10px;">View on GitHub</a>
+        </div>
+
+        <div class="card">
+          <div style="font-weight:800; color:var(--red);">Todo App</div>
+          <div class="muted small" style="margin-top:6px;">Lightweight Java Todo manager.</div>
+          <a class="btn" href="https://github.com/mwakidenis" target="_blank" style="background:var(--green); color:#000; padding:8px 10px; border-radius:8px; display:inline-block; margin-top:10px;">View on GitHub</a>
+        </div>
+
+        <div class="card">
+          <div style="font-weight:800; color:var(--green);">Number Guessing Game</div>
+          <div class="muted small" style="margin-top:6px;">Console-based number guessing game.</div>
+          <a class="btn" href="https://github.com/mwakidenis" target="_blank" style="background:#f59e0b; color:#000; padding:8px 10px; border-radius:8px; display:inline-block; margin-top:10px;">View on GitHub</a>
+        </div>
+
+        <div class="card">
+          <div style="font-weight:800; color:var(--red);">Football Game</div>
+          <div class="muted small" style="margin-top:6px;">Small football simulation (Java).</div>
+          <a class="btn" href="https://github.com/mwakidenis" target="_blank" style="background:#2563eb; color:#fff; padding:8px 10px; border-radius:8px; display:inline-block; margin-top:10px;">View on GitHub</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOLLOWERS (Rainforest themed) -->
+    <section id="followers" class="rainforest">
+      <div class="canopy"></div>
+      <div class="mist"></div>
+
+      <div class="tight section-tight" style="position:relative; z-index:6;">
+        <h2 style="font-weight:900; color:#bff7cf;">Followers & Community</h2>
+        <p class="muted small" style="max-width:880px;">Connected with other developers — readme-stats images below reflect current activity and languages.</p><br>
+        <p class="muted small" style="max-width:880px;"> My best followers Include:
+          <ul><a href="https://github.com/MwathewKioko">Mathew Kioko</a></ul>
+          <ul><a href="https://github.com/yuguwduewgd">Yug</a></ul>
+          <ul><a href="https://github.com/mwakidenis">Mwaki Denis</a></ul>
+          <ul><a href="https://github.com/Sara-2016">Sara Bolsheviks</a></ul>
+          <ul><a href="https://github.com/JonathanBeans123">Jonathan Beans</a></ul>
+          <ul><a href="https://github.com/amitjadiya"> Amit Kumar</a></ul>
+         
+        <div style="margin-top:18px; display:flex; gap:16px; flex-wrap:wrap;">
+          <div class="card" style="min-width:220px;">
+            <img src="https://github-readme-stats.vercel.app/api?username=mwakidenis&show_icons=true&theme=dark&hide_border=true" alt="profile summary" style="width:100%; border-radius:8px;" />
+            <div class="muted small" style="margin-top:8px;">Profile summary</div>
+          </div>
+
+          <div class="card" style="min-width:260px;">
+            <div style="font-weight:800;color:var(--green);">Top Languages</div>
+            <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=mwakidenis&layout=compact&theme=dark&hide_border=true" alt="top langs" style="width:100%; margin-top:10px; border-radius:8px;" />
+            <div class="muted small" style="margin-top:8px;">Languages across public repos</div>
+          </div>
+
+          <div class="card" style="min-width:260px;">
+            <div style="font-weight:800;color:var(--red);">Activity</div>
+            <img src="https://github-readme-activity-graph.vercel.app/graph?username=mwakidenis&bg_color=0d1117&color=ffffff&line=ff6f3c&point=ffffff&area=true&hide_border=true" alt="activity graph" style="width:100%; margin-top:10px; border-radius:8px;" />
+            <div class="muted small" style="margin-top:8px;">Contribution graph</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="firefly" style="left:20%; top:46%; animation-duration:6.5s;"></div>
+      <div class="firefly" style="left:44%; top:62%; animation-duration:8s;"></div>
+      <div class="firefly" style="left:76%; top:52%; animation-duration:7.2s;"></div>
+    </section>
+
+    <!-- BLOGS -->
+    <section id="blog" class="tight section">
+      <h2 style="color:var(--red); font-weight:800; margin-bottom:12px;">Blog</h2>
+      <div class="grid-cards">
+        <div class="card">
+          <div style="font-weight:800;color:var(--green);">Mastering Java Basics</div>
+          <div class="muted small">Sep 2025</div>
+          <p class="muted small" style="margin-top:8px;">Hands-on guide to Java fundamentals and developer workflows.</p>
+          <a class="btn" href="#" style="background:var(--red);">Read</a>
+        </div>
+
+        <div class="card">
+          <div style="font-weight:800;color:var(--green);">Building Apps with Python</div>
+          <div class="muted small">Aug 2025</div>
+          <p class="muted small" style="margin-top:8px;">Prototyping with Python and quick tooling tips.</p>
+          <a class="btn" href="#" style="background:var(--green);">Read</a>
+        </div>
+
+        <div class="card">
+          <div style="font-weight:800;color:var(--green);">GitHub Tips & Tricks</div>
+          <div class="muted small">Jul 2025</div>
+          <p class="muted small" style="margin-top:8px;">Workflows and automation tips for developers.</p>
+          <a class="btn" href="#" style="background: linear-gradient(90deg,var(--red),var(--green));">Read</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact" class="rainforest">
+      <div class="canopy"></div>
+      <div class="mist"></div>
+
+      <div class="tight section-tight" style="position:relative; z-index:6;">
+        <h2 style="font-weight:900; color:#bff7cf;">Get in Touch</h2>
+        <p class="muted small">DMs, collaborations, or questions — reach out via the channels below or use the contact form.</p>
+
+        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:14px;">
+          <a class="card" href="https://mwakidenis.github.io" target="_blank">🌍 Website</a>
+          <a class="card" href="https://github.com/mwakidenis" target="_blank">💻 GitHub</a>
+          <a class="card" href="https://gitlab.com/mwakidenis" target="_blank">🦊 GitLab</a>
+          <a class="card" href="mailto:mwakidenice@gmail.com">📧 Email</a>
+          <a class="card" href="https://discord.gg/68mtBJqRgs" target="_blank">💬 Discord</a>
+        </div>
+
+        <div style="margin-top:20px; display:flex; gap:18px; flex-wrap:wrap;">
+          <div style="flex:1; min-width:280px;">
+            <div class="card">
+              <form id="contactForm">
+                <label class="small muted">Your name</label>
+                <input id="cname" type="text" placeholder="Your name" style="width:100%; padding:8px; margin-top:6px; border-radius:8px; background:#050505; border:1px solid rgba(255,255,255,0.04); color:var(--text);" />
+                <label class="small muted" style="margin-top:8px; display:block;">Your email</label>
+                <input id="cemail" type="email" placeholder="you@mail.com" style="width:100%; padding:8px; margin-top:6px; border-radius:8px; background:#050505; border:1px solid rgba(255,255,255,0.04); color:var(--text);" />
+                <label class="small muted" style="margin-top:8px; display:block;">Message</label>
+                <textarea id="cmsg" placeholder="Hi Denis..." style="width:100%; min-height:120px; padding:8px; margin-top:6px; border-radius:8px; background:#050505; border:1px solid rgba(255,255,255,0.04); color:var(--text);"></textarea>
+                <div style="margin-top:10px;">
+                  <button type="submit" class="cta" style="padding:9px 14px;">Send</button>
+                  <button id="openTermsBtn" type="button" class="btn-close" style="margin-left:10px;background:transparent;border:1px solid rgba(255,255,255,0.04);padding:8px;border-radius:8px;color:var(--muted);">Terms & Privacy</button>
+                </div>
+                <p id="formNote" class="muted small" style="margin-top:8px;">Note: This opens your email client via mailto:. Ask me if you want hosted form integration (Formspree, Netlify forms, etc.).</p>
+              </form>
+            </div>
+          </div>
+
+          <div style="flex:1; min-width:260px;">
+            <div class="card">
+              <div style="font-weight:800; color:var(--green);">Other ways</div>
+              <p class="muted small" style="margin-top:8px;">Direct links for quick contact (X/Discord/etc.).</p>
+              <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
+                <a class="small muted" href="https://x.com/Apro5550" target="_blank">X.com</a>
+                <a class="small muted" href="https://hashnode.com/@mwakidenis" target="_blank">Hashnode</a>
+                <a class="small muted" href="https://dev.to/mwakidenis" target="_blank">Dev.to</a>
+                <a class="small muted" href="https://stackoverflow.com/users/31370142/mwaki-denice" target="_blank">StackOverflow</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="tight">
+      <div class="muted small"><a href="#" id="openTermsFooter">Terms</a> • <a href="#" id="openPrivacyFooter">Privacy</a> • <a href="#">Policies</a></div>
+      <div style="margin-top:8px;">© 2025 Drive-for-Java — Mwaki Denis</div>
+    </div>
+  </footer>
+
+  <!-- Terms modal -->
+  <div id="modalBack" class="modal-back" style="display:none;">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 id="modalTitle" style="margin:0; font-weight:800; color:var(--red);">Terms & Privacy</h3>
+        <button id="closeModal" style="background:transparent;border:1px solid rgba(255,255,255,0.04);padding:8px;border-radius:8px;color:var(--muted);">Close</button>
+      </div>
+      <div style="margin-top:12px; color:var(--muted); line-height:1.6; font-size:14px;">
+        <p><strong>Terms of Use</strong></p>
+        <p>Use this portfolio for informational purposes. Projects link to their repositories. Respect repo licenses.</p>
+        <p><strong>Privacy</strong></p>
+        <p>This site does not collect personal data. The contact form uses mailto: as a fallback. Public GitHub images and stats are loaded from external endpoints.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts: visuals, audio, controls -->
+  <script>
+  /* ---------------- pointer glow ---------------- */
+  (function(){
+    const dot = document.getElementById('pointerDot');
+    window.addEventListener('mousemove', e => {
+      dot.style.left = e.clientX + 'px';
+      dot.style.top = e.clientY + 'px';
+    });
+  })();
+
+  /* ---------------- rain canvas visuals ---------------- */
+  (function(){
+    const canvas = document.getElementById('rainCanvas');
+    const ctx = canvas.getContext('2d');
+    let W = window.innerWidth;
+    let H = Math.max(window.innerHeight * 0.78, 600);
+
+    function resize(){
+      W = window.innerWidth;
+      H = Math.max(window.innerHeight * 0.78, 600);
+      canvas.width = W;
+      canvas.height = H;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // create raindrops
+    const drops = [];
+    const density = Math.max(220, Math.floor(W / 5));
+    for(let i=0;i<density;i++){
+      drops.push({
+        x: Math.random()*W,
+        y: Math.random()*H,
+        vy: Math.random()*3 + 6,
+        len: Math.random()*14 + 6,
+        angle: -0.25 + Math.random()*0.5,
+        opacity: Math.random()*0.45 + 0.12,
+        width: Math.random()*0.9 + 0.4
+      });
+    }
+
+    const splashes = [];
+    function draw(){
+      ctx.clearRect(0,0,W,H);
+      ctx.globalCompositeOperation = 'source-over';
+      for(const d of drops){
+        ctx.strokeStyle = 'rgba(200,220,255,'+ d.opacity +')';
+        ctx.lineWidth = d.width;
+        ctx.beginPath();
+        ctx.moveTo(d.x, d.y);
+        ctx.lineTo(d.x + d.angle*10, d.y + d.len);
+        ctx.stroke();
+
+        d.x += d.angle * d.vy * 0.12 + Math.sin(d.y*0.01)*0.4;
+        d.y += d.vy;
+
+        if(d.y > H - 18){
+          for(let s=0; s<2; s++){
+            splashes.push({
+              x: d.x + (Math.random()-0.5)*6,
+              y: H - 12 + (Math.random()*6),
+              vx: (Math.random()-0.5)*3,
+              vy: -(Math.random()*2 + 1),
+              life: Math.random()*18 + 10,
+              alpha: 1
+            });
+          }
+          d.y = -Math.random()*60;
+          d.x = Math.random()*W;
+        }
+      }
+
+      for(let i=splashes.length-1;i>=0;i--){
+        const s = splashes[i];
+        ctx.beginPath();
+        ctx.fillStyle = 'rgba(200,220,255,' + (s.alpha*0.8) + ')';
+        ctx.arc(s.x, s.y, 1.6, 0, Math.PI*2);
+        ctx.fill();
+        s.x += s.vx;
+        s.y += s.vy;
+        s.vy += 0.12;
+        s.life -= 1;
+        s.alpha *= 0.985;
+        if(s.life <= 0) splashes.splice(i,1);
+      }
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+
+  /* ---------------- lightning visuals ---------------- */
+  (function(){
+    const flash = document.getElementById('flash');
+    function strike(){
+      if(Math.random() > 0.9){
+        flash.style.background = 'radial-gradient(circle at 60% 20%, rgba(255,255,255,0.95), rgba(255,255,255,0.6) 10%, rgba(255,255,255,0.12) 24%, rgba(0,0,0,0) 36%)';
+        flash.style.opacity = '0.98';
+        // dispatch event to sync thunder
+        window.dispatchEvent(new CustomEvent('lightning-strike'));
+        setTimeout(()=> { flash.style.opacity = '0'; }, 100 + Math.random()*100);
+      }
+      setTimeout(strike, Math.random()*4200 + 900);
+    }
+    strike();
+  })();
+
+  /* ---------------- Blended procedural audio (WebAudio) ---------------- */
+  (function(){
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let ctx = null;
+    const state = { natureGain: 0.7, musicGain: 0.36, masterMute: false, musicPlaying: false };
+
+    // Music element (streamed) - free demo
+    const musicSrc = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
+    const musicAudio = new Audio(musicSrc);
+    musicAudio.loop = true;
+    musicAudio.crossOrigin = 'anonymous';
+    let musicNode = null;
+
+    function ensureCtx(){
+      if(!ctx){
+        ctx = new AudioContext();
+        try{
+          musicNode = ctx.createGain();
+          const track = ctx.createMediaElementSource(musicAudio);
+          track.connect(musicNode).connect(ctx.destination);
+          musicNode.gain.value = state.musicGain;
+        }catch(e){
+          // if media element source fails (browsers), fallback to HTML audio volume
+          musicAudio.volume = state.musicGain;
+        }
+      }
+    }
+
+    // Rain using noise buffer + filtering to shape 'real' feel
+    let rainNode = null;
+    function startRain(){
+      if(!ctx) ensureCtx();
+      if(rainNode) return;
+      const bufferSize = 2 * ctx.sampleRate;
+      const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) output[i] = (Math.random()*2 - 1) * 0.5;
+      const noiseSource = ctx.createBufferSource();
+      noiseSource.buffer = noiseBuffer;
+      noiseSource.loop = true;
+      const lowpass = ctx.createBiquadFilter();
+      lowpass.type = 'lowpass'; lowpass.frequency.value = 1500;
+      const highpass = ctx.createBiquadFilter();
+      highpass.type = 'highpass'; highpass.frequency.value = 200;
+      const rainGain = ctx.createGain(); rainGain.gain.value = state.natureGain;
+      noiseSource.connect(lowpass); lowpass.connect(highpass); highpass.connect(rainGain); rainGain.connect(ctx.destination);
+      noiseSource.start();
+      rainNode = { noiseSource, rainGain, lowpass, highpass };
+      // expose for volume adjustments
+      window.rainNode = rainNode;
+    }
+    function stopRain(){
+      if(!rainNode) return;
+      try{ rainNode.noiseSource.stop(); }catch(e){}
+      rainNode = null;
+      window.rainNode = null;
+    }
+
+    // Thunder: low-frequency oscillator with noise burst (played on lightning)
+    function playThunder(){
+      if(!ctx) ensureCtx();
+      const t = ctx.currentTime;
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(40 + Math.random()*30, t);
+      g.gain.setValueAtTime(0, t);
+      o.connect(g);
+      const lp = ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value = 800;
+      g.connect(lp); lp.connect(ctx.destination);
+      g.gain.linearRampToValueAtTime(0.12 + Math.random()*0.06, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 2.4 + Math.random()*0.8);
+      o.start(t);
+      setTimeout(()=> { try{ o.stop() }catch(e){} }, 3000);
+    }
+
+    // Birds/frog/monkey synths (subtle)
+    function birdChirp(){
+      if(!ctx) ensureCtx();
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass'; bp.frequency.value = 2000 + Math.random()*1200;
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(2200 + Math.random()*800, now);
+      gain.gain.setValueAtTime(0, now);
+      osc.connect(bp); bp.connect(gain); gain.connect(ctx.destination);
+      const dur = 0.12 + Math.random()*0.14;
+      gain.gain.linearRampToValueAtTime(0.06 + Math.random()*0.04, now + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+      osc.start(now); osc.stop(now + dur + 0.02);
+    }
+
+    function frogCall(){
+      if(!ctx) ensureCtx();
+      const now = ctx.currentTime;
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'triangle';
+      o.frequency.setValueAtTime(220 + Math.random()*120, now);
+      g.gain.setValueAtTime(0, now);
+      o.connect(g); g.connect(ctx.destination);
+      g.gain.linearRampToValueAtTime(0.02 + Math.random()*0.02, now + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + 1.4 + Math.random()*0.6);
+      o.start(now); setTimeout(()=>{ try{o.stop()}catch(e){} }, 1600);
+    }
+
+    function monkeyCall(){
+      if(!ctx) ensureCtx();
+      const now = ctx.currentTime;
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'sawtooth';
+      const bp = ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value = 900 + Math.random()*600;
+      o.connect(bp); bp.connect(g); g.connect(ctx.destination);
+      g.gain.setValueAtTime(0, now);
+      o.frequency.setValueAtTime(600 + Math.random()*400, now);
+      o.frequency.exponentialRampToValueAtTime(900 + Math.random()*600, now + 0.35);
+      g.gain.linearRampToValueAtTime(0.06, now + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.8);
+      o.start(now); setTimeout(()=>{ try{o.stop()}catch(e){} }, 900);
+    }
+
+    // schedule animals under the rain
+    let animalTimer = null;
+    function scheduleAnimals(){
+      if(!ctx) ensureCtx();
+      function tick(){
+        const r = Math.random();
+        if(r < 0.65){
+          const count = 1 + Math.floor(Math.random()*3);
+          for(let i=0;i<count;i++) setTimeout(()=> birdChirp(), i*180 + Math.random()*120);
+        } else if(r < 0.9){
+          frogCall();
+        } else {
+          monkeyCall();
+        }
+        animalTimer = setTimeout(tick, 3000 + Math.random()*9000);
+      }
+      tick();
+    }
+
+    function startNature(){
+      startRain();
+      scheduleAnimals();
+    }
+
+    function stopNature(){
+      stopRain();
+      if(animalTimer) clearTimeout(animalTimer);
+      animalTimer = null;
+    }
+
+    // UI elements
+    const natureVolEl = document.getElementById('natureVol');
+    const musicVolEl = document.getElementById('musicVol');
+    const masterMuteBtn = document.getElementById('masterMute');
+    const musicPlayBtn = document.getElementById('musicPlay');
+
+    natureVolEl.addEventListener('input', e=>{
+      state.natureGain = e.target.value/100;
+      if(window.rainNode && window.rainNode.rainGain) window.rainNode.rainGain.gain.value = state.natureGain;
+    });
+
+    musicVolEl.addEventListener('input', e=>{
+      state.musicGain = e.target.value/100;
+      if(musicNode) musicNode.gain.value = state.musicGain;
+      musicAudio.volume = state.musicGain;
+    });
+
+    masterMuteBtn.addEventListener('click', ()=>{
+      state.masterMute = !state.masterMute;
+      masterMuteBtn.textContent = state.masterMute ? '🔈 Unmute' : '🔇 Mute';
+      if(state.masterMute){
+        if(ctx && ctx.state === 'running') ctx.suspend();
+        musicAudio.muted = true;
+      } else {
+        if(ctx && ctx.state === 'suspended') ctx.resume();
+        musicAudio.muted = false;
+      }
+    });
+
+    musicPlayBtn.addEventListener('click', async ()=>{
+      if(!ctx) ensureCtx();
+      if(state.musicPlaying){
+        musicAudio.pause(); state.musicPlaying = false; musicPlayBtn.textContent = 'Play Music';
+      } else {
+        try{ await musicAudio.play(); state.musicPlaying = true; musicPlayBtn.textContent = 'Pause Music'; }catch(e){ console.warn('music autoplay blocked', e); }
+      }
+    });
+
+    // sync thunder to lightning
+    window.addEventListener('lightning-strike', ()=> {
+      setTimeout(()=> { if(!state.masterMute) playThunder(); }, 200 + Math.random()*700);
+    });
+
+    // Start nature after first user gesture to respect autoplay policies
+    function initOnFirstGesture(){
+      if(!ctx){
+        try{ ctx = new AudioContext(); }catch(e){ console.warn('AudioContext blocked'); }
+      }
+      startNature();
+      window.removeEventListener('pointerdown', initOnFirstGesture);
+    }
+    window.addEventListener('pointerdown', initOnFirstGesture, { once:true });
+
+  })();
+
+  /* ---------------- Contact form (mailto fallback) ---------------- */
+  (function(){
+    const form = document.getElementById('contactForm');
+    form.addEventListener('submit', e=>{
+      e.preventDefault();
+      const name = document.getElementById('cname').value || 'Anonymous';
+      const email = document.getElementById('cemail').value || '';
+      const msg = document.getElementById('cmsg').value || '';
+      const subject = encodeURIComponent('Contact from Drive-for-Java site — ' + name);
+      const body = encodeURIComponent('Name: ' + name + '\\nEmail: ' + email + '\\n\\n' + msg);
+      window.location.href = 'mailto:anshuman.jadiya03@gmail.com?subject=' + subject + '&body=' + body;
+    });
+  })();
+
+  /* ---------------- Terms modal ---------------- */
+  (function(){
+    const modalBack = document.getElementById('modalBack');
+    const openBtns = [document.getElementById('openTermsBtn'), document.getElementById('openTermsFooter'), document.getElementById('openPrivacyFooter')].filter(Boolean);
+    const closeBtn = document.getElementById('closeModal');
+    openBtns.forEach(b=> b && b.addEventListener('click', ()=> { modalBack.style.display = 'flex'; }));
+    closeBtn && closeBtn.addEventListener('click', ()=> { modalBack.style.display = 'none'; });
+    modalBack && modalBack.addEventListener('click', (e)=> { if(e.target === modalBack) modalBack.style.display = 'none'; });
+  })();
+
+  </script>
+</body>
+</html>

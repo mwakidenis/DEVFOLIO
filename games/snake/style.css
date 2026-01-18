@@ -1,0 +1,42 @@
+#snake-container {
+    text-align: center;
+}
+
+#snake-container canvas {
+    background-color: #44475a;
+    border: 3px solid #bd93f9;
+    border-radius: 10px;
+    margin-top: 10px;
+}
+
+#snake-container button,
+#snake-container select {
+    padding: 7px 15px;
+    margin: 5px;
+    font-size: 16px;
+    background-color: #44475a;
+    color: #f8f8f2;
+    border: 1px solid #bd93f9;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#snake-container button:hover,
+#snake-container select:hover {
+    background-color: #bd93f9;
+    color: #282a36;
+}
+
+#snake-container ul {
+    text-align: left;
+    display: inline-block;
+    margin-left: 20px;
+}
+
+#snake-container h1 {
+    color: #ff79c6;
+}
+
+#snake-container p {
+    color: #f8f8f2;
+}

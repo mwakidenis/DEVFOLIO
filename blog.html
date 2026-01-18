@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Anshuman Jadiya | Blog</title>
+<style>
+  body {
+    margin:0; padding:40px;
+    font-family: "Segoe UI", sans-serif;
+    background: linear-gradient(120deg,#0f172a,#001219);
+    color:#fff;
+    display:flex; justify-content:center; align-items:center;
+    height:100vh;
+  }
+  .blog-container {
+    max-width:420px;
+    width:100%;
+    text-align:center;
+    background:rgba(0,0,0,0.4);
+    padding:20px;
+    border-radius:16px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.5);
+    position:relative;
+    overflow:hidden;
+  }
+
+  /* rainbow border animation */
+  .blog-container::before {
+    content:"";
+    position:absolute;
+    top:-4px; left:-4px; right:-4px; bottom:-4px;
+    border-radius:20px;
+    background:linear-gradient(270deg,
+      red,orange,yellow,green,blue,indigo,violet,red);
+    background-size:400% 400%;
+    z-index:-1;
+    animation:rainbow 8s linear infinite;
+  }
+  @keyframes rainbow {
+    0%{background-position:0% 50%;}
+    50%{background-position:100% 50%;}
+    100%{background-position:0% 50%;}
+  }
+
+  .blog-card {
+    display:none;
+    flex-direction:column;
+    align-items:center;
+    gap:14px;
+  }
+  .blog-card.active {display:flex;}
+  .blog-card img {
+    width:120px; height:120px;
+    border-radius:12px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.4);
+  }
+  .blog-card h3 {margin:0;}
+  .controls {
+    margin-top:16px;
+    display:flex;
+    justify-content:space-between;
+  }
+  button {
+    background:#fff2;
+    border:none;
+    padding:10px 20px;
+    border-radius:8px;
+    color:#fff;
+    font-size:14px;
+    cursor:pointer;
+    transition:0.3s;
+  }
+  button:hover {background:#fff3;}
+</style>
+</head>
+<body>
+
+<div class="blog-container">
+  <!-- Blog cards -->
+  <div class="blog-card active">
+    <img src="https://github.com/user-attachments/assets/b5df5c33-d971-4fd1-b0d7-36a56ec78eed" alt="GitHub">
+    <h3>GitHub</h3>
+    <p>Check out my projects and repositories.</p>
+    <a href="https://github.com/anshumanjadiya1102" target="_blank">Visit GitHub</a>
+  </div>
+
+  <div class="blog-card">
+    <img src="https://github.com/user-attachments/assets/8acb23a2-a55c-482f-a200-6a0115c5cf03" alt="Gmail">
+    <h3>Email Me</h3>
+    <p>Let’s connect via email.</p>
+    <a href="mailto:anshuman.jadiya03@gmail.com">Send Mail</a>
+  </div>
+
+  <div class="blog-card">
+    <img src="https://github.com/user-attachments/assets/412140b6-9806-428c-bab4-25ab6b34897e" alt="GitLab">
+    <h3>GitLab</h3>
+    <p>Explore my GitLab repositories.</p>
+    <a href="https://gitlab.com/anshumanjadiya1102" target="_blank">Visit GitLab</a>
+  </div>
+
+  <div class="blog-card">
+    <img src="https://github.com/user-attachments/assets/330d20c9-8752-4d16-a2f3-c1713bf99ce8" alt="Discord">
+    <h3>Discord</h3>
+    <p>Join my Discord community.</p>
+    <a href="https://discord.gg/68mtBJqRgs" target="_blank">Join Discord</a>
+  </div>
+
+  <div class="blog-card">
+    <img src="https://github.com/user-attachments/assets/7b63823d-7042-42cc-a6bb-e1ae0f3a19de" alt="Bitbucket">
+    <h3>Bitbucket</h3>
+    <p>Check my work on Bitbucket.</p>
+    <a href="https://bitbucket.org/anshumanjadiya1102/workspace/overview/" target="_blank">Visit Bitbucket</a>
+  </div>
+
+  <div class="blog-card">
+    <img src="https://github.com/user-attachments/assets/6bf0430a-4ca2-44c8-b285-86691af657ed" alt="Reddit">
+    <h3>Reddit</h3>
+    <p>Follow me on Reddit.</p>
+    <a href="https://www.reddit.com/user/anshumanjadiya1102/" target="_blank">Visit Reddit</a>
+  </div>
+
+  <div class="blog-card">
+    <img src="https://github.com/user-attachments/assets/fb616e3c-5a35-408f-975c-117cd5618ded" alt="Dev.to">
+    <h3>Dev.to</h3>
+    <p>Read my dev articles.</p>
+    <a href="https://dev.to/anshumanjadiya1102" target="_blank">Visit Dev.to</a>
+  </div>
+
+  <div class="blog-card">
+    <img src="https://github.com/user-attachments/assets/47d624d3-33e5-4146-a1c8-30ae62b17e4e" alt="Twitter">
+    <h3>Twitter/X</h3>
+    <p>Follow me for quick updates.</p>
+    <a href="https://x.com/anshumanjadiya" target="_blank">Visit X</a>
+  </div>
+
+  <div class="blog-card">
+    <img src="https://github.com/user-attachments/assets/672eb0e9-9538-4000-a55f-40ea5307daf8" alt="Forem">
+    <h3>Forem</h3>
+    <p>Check out my Forem presence.</p>
+    <a href="https://forem.com/anshumanjadiya1102" target="_blank">Visit Forem</a>
+  </div>
+
+  <div class="blog-card">
+    <img src="https://github.com/user-attachments/assets/f7f3a640-c087-4b7c-9fe2-b6451822d8e4" alt="Hashnode">
+    <h3>Hashnode</h3>
+    <p>Read my Hashnode blogs.</p>
+    <a href="https://hashnode.com/@anshumanjadiya1102" target="_blank">Visit Hashnode</a>
+  </div>
+
+  <div class="blog-card">
+    <img src="https://github.com/user-attachments/assets/4914c1d1-6742-417e-bd00-9755cdf598af" alt="StackOverflow">
+    <h3>Stack Overflow</h3>
+    <p>See my StackOverflow answers.</p>
+    <a href="https://stackoverflow.com/users/31370142/anshuman-jadiya" target="_blank">Visit StackOverflow</a>
+  </div>
+
+  <div class="blog-card">
+    <img src="https://github.com/user-attachments/assets/104b06ff-717f-43b9-be3c-be404b5963e6" alt="LinkedIn">
+    <h3>LinkedIn</h3>
+    <p>Connect with me professionally.</p>
+    <a href="https://in/anshuman-jadiya-a56929381" target="_blank">Visit LinkedIn</a>
+  </div>
+
+  <div class="blog-card">
+    <img src="https://github.com/user-attachments/assets/84daf12a-46a3-4296-b95c-17967a35efd5" alt="Bluesky">
+    <h3>Bluesky</h3>
+    <p>Follow me on Bluesky.</p>
+    <a href="https://@anshuman-jadiya03.bsky.social" target="_blank">Visit Bluesky</a>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <button onclick="prevBlog()">⬅ Previous</button>
+    <button onclick="nextBlog()">Next ➡</button>
+  </div>
+</div>
+
+<script>
+let current=0;
+const cards=document.querySelectorAll(".blog-card");
+function showCard(i){
+  cards.forEach(c=>c.classList.remove("active"));
+  cards[i].classList.add("active");
+}
+function nextBlog(){
+  current=(current+1)%cards.length;
+  showCard(current);
+}
+function prevBlog(){
+  current=(current-1+cards.length)%cards.length;
+  showCard(current);
+}
+// auto move every 3 seconds
+setInterval(nextBlog,3000);
+</script>
+
+</body>
+</html>
+

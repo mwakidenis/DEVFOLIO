@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>World Map with India Highlighted</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+    
+    <style>
+        /* Map container size */
+        #map {
+            height: 600px;
+            width: 100%;
+        }
+        body { margin: 0; }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+// 1️⃣ Initialize the map
+var map = L.map('map').setView([20, 80], 2); // Center world
+
+// 2️⃣ Add free OpenStreetMap tiles
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+// 3️⃣ India polygon (simplified)
+var indiaPolygon = {
+    "type": "Feature",
+    "properties": { "name": "India" },
+    "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+            [68.17665, 7.96553],
+            [97.40256, 7.96553],
+            [97.40256, 35.49401],
+            [68.17665, 35.49401],
+            [68.17665, 7.96553]  // Close the polygon
+        ]]
+    }
+};
+
+// 4️⃣ Add India polygon with styling
+L.geoJSON(indiaPolygon, {
+    style: {
+        color: 'red',       // Border color
+        fillColor: 'orange', // Fill color
+        weight: 2,
+        fillOpacity: 0.5
+    }
+}).addTo(map);
+
+// 5️⃣ Optional: popup on click
+L.geoJSON(indiaPolygon)
+  .bindPopup("India")
+  .addTo(map);
+</script>
+</body>
+</html>

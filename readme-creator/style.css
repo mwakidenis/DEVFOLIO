@@ -1,0 +1,23 @@
+body { font-family: 'Segoe UI', sans-serif; margin:0; padding:20px; background:#121212; color:#eee;}
+.container { max-width:1200px; margin:auto; }
+header { display:flex; justify-content:space-between; align-items:center; }
+header h1 { margin:0; }
+header .header-buttons a { margin-left:10px; text-decoration:none; }
+main { display:flex; flex-wrap:wrap; gap:20px; margin-top:20px;}
+.form-panel, .preview-panel { flex:1; min-width:300px; }
+input, textarea, select, button { display:block; width:100%; margin:8px 0; padding:8px; border-radius:6px; border:none; }
+button { background:#444; color:#fff; cursor:pointer; transition:0.2s;}
+button:hover { background:#666;}
+pre { background:#1e1e1e; padding:15px; border-radius:10px; overflow-x:auto; white-space:pre-wrap; word-wrap:break-word;}
+canvas#confettiCanvas { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:999; }
+
+.drop-area { border: 2px dashed #666; padding: 20px; text-align: center; margin: 10px 0; border-radius: 8px; transition: background 0.2s; }
+.drop-area.dragover { background: #444; }
+
+.badge-preview img { height:25px; margin:5px; }
+
+/* Themes */
+body.dracula { background:#282a36; color:#f8f8f2;}
+body.cyberpunk { background:#0f0f2b; color:#ff79c6;}
+body.matrix { background:#000; color:#0f0; font-family:monospace;}
+body.calm { background:linear-gradient(135deg,#2e3c5f,#4a6fa5); color:#f0f0f0;}

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Number Guess</title>
+<link rel="stylesheet" href="../common.css"><link rel="stylesheet" href="style.css"></head>
+<body class="center">
+  <h1>🔢 Guess Number</h1>
+  <div id="menu">
+    <label class="label">Range</label>
+    <select id="difficulty">
+      <option value="10">Easy (1-10)</option>
+      <option value="50" selected>Medium (1-50)</option>
+      <option value="100">Hard (1-100)</option>
+    </select>
+    <button id="startBtn">Start</button>
+  </div>
+  <p id="instruction" class="info"></p>
+  <input id="guessInput" type="number" placeholder="Your guess" disabled>
+  <button id="guessBtn" disabled>Guess</button>
+  <p id="result" class="info"></p>
+<script src="script.js"></script>
+</body>
+</html>

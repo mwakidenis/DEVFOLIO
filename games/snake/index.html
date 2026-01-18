@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snake Game</title>
+<!-- Include common.css first -->
+<link rel="stylesheet" href="../common.css">
+<!-- Then Snake-specific Dracula theme -->
+<link rel="stylesheet" href="style.css">
+<script src="script.js" defer></script>
+</head>
+<body>
+
+<div id="snake-container">
+
+    <!-- Start Screen -->
+    <div id="snake-start">
+        <h1>Snake Game</h1>
+        <p>Guidelines:</p>
+        <ul>
+            <li>Use arrow keys to move the snake.</li>
+            <li>Eat the yellow food to grow and score points.</li>
+            <li>Avoid walls and your own body.</li>
+            <li>Select difficulty and press Next.</li>
+        </ul>
+        <label for="snake-difficulty">Difficulty:</label>
+        <select id="snake-difficulty">
+            <option value="5">Easy</option>
+            <option value="10" selected>Medium</option>
+            <option value="15">Hard</option>
+        </select>
+        <br><br>
+        <button id="snake-next">Next</button>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="snake-game" style="display:none;">
+        <canvas id="snake-canvas" width="600" height="600"></canvas>
+        <p>Score: <span id="snake-score">0</span></p>
+        <button id="snake-restart">Restart</button>
+    </div>
+
+</div>
+
+</body>
+</html>
+

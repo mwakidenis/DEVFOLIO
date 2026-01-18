@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interactive README/Profile Generator</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/confetti-js@0.0.18/dist/index.min.js"></script>
+</head>
+<body class="dark">
+
+<div class="container">
+    <header>
+        <h1>README & Profile Generator</h1>
+        <div class="header-buttons">
+            <a class="github-button" href="https://github.com/anshumanjadiya1102/anshumanjadiya1102.github.io" data-icon="octicon-star" data-show-count="true">Star</a>
+            <a class="github-button" href="https://github.com/anshumanjadiya1102" aria-label="Follow @anshumanjadiya1102 on GitHub">Follow Me</a>
+        </div>
+    </header>
+
+    <main>
+        <section class="form-panel">
+            <form id="readmeForm">
+                <label>GitHub Username:</label>
+                <input type="text" id="username" placeholder="octocat" required>
+
+                <label>Full Name / Display Name:</label>
+                <input type="text" id="name" placeholder="John Doe" required>
+
+                <label>Subtitle / Tagline:</label>
+                <input type="text" id="subtitle" placeholder="Passionate Developer">
+
+                <label>Fun Fact:</label>
+                <input type="text" id="funfact" placeholder="I love coding ☕">
+
+                <label>About Me:</label>
+                <textarea id="about" placeholder="Short bio"></textarea>
+
+                <label>Top Repos (comma separated or leave blank for auto):</label>
+                <input type="text" id="toprepos" placeholder="repo1,repo2">
+
+                <label>Tech Stack (comma separated):</label>
+                <input type="text" id="techstack" placeholder="Java,React,Node.js">
+                <div id="techPreview" class="badge-preview"></div>
+
+                <label>Profile GIF:</label>
+                <div id="gifDropArea" class="drop-area">Drag & Drop GIF here or paste URL below</div>
+                <input type="text" id="gif" placeholder="https://...gif">
+
+                <label>Theme:</label>
+                <select id="theme">
+                    <option value="dark">Default Dark</option>
+                    <option value="dracula">Dracula</option>
+                    <option value="cyberpunk">Cyberpunk</option>
+                    <option value="matrix">Matrix</option>
+                    <option value="calm">Calm Night</option>
+                </select>
+
+                <button type="button" id="surpriseBtn">Surprise Me 🎉</button>
+                <button type="submit">Generate README</button>
+            </form>
+        </section>
+
+        <section class="preview-panel">
+            <h2>Preview:</h2>
+            <pre id="preview"></pre>
+            <button id="copyBtn">Copy to Clipboard</button>
+            <button id="downloadBtn">Download README.md</button>
+        </section>
+    </main>
+</div>
+
+<canvas id="confettiCanvas"></canvas>
+
+<script src="quotes.js"></script>
+<script src="templates.js"></script>
+<script src="github-api.js"></script>
+<script src="components/preview.js"></script>
+<script src="components/themeSelector.js"></script>
+<script src="components/confetti.js"></script>
+<script src="script.js"></script>
+<script async defer src="https://buttons.github.io/buttons.js"></script>
+</body>
+</html>
+
+

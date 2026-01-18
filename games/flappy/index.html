@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Flappy BALL Game</title>
+<style>
+  body { margin: 0; overflow: hidden; background: #70c5ce; }
+  canvas { display: block; margin: 0 auto; background: #70c5ce; }
+  #score {
+    position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+    color: #fff; font-size: 2em; font-family: sans-serif; text-shadow: 2px 2px 4px #222;
+  }
+</style>
+</head>
+<body>
+<div id="score">0</div>
+<canvas id="game" width="400" height="600"></canvas>
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const scoreEl = document.getElementById('score');
+
+const GRAVITY = 0.4;
+const FLAP = -7;
+const PIPE_WIDTH = 60;
+const PIPE_GAP = 160;
+const BIRD_RADIUS = 20;
+
+let birdY = canvas.height/2;
+let birdV = 0;
+let pipes = [];
+let frame = 0;
+let score = 0;
+let gameOver = false;
+
+// Bird drawing function
+function drawBird(x, y) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(Math.min(birdV/10, Math.PI/6));
+
+  // Body
+  ctx.beginPath();
+  ctx.arc(0, 0, BIRD_RADIUS, 0, Math.PI*2);
+  ctx.fillStyle = "#ffcc00";
+  ctx.fill();
+  ctx.strokeStyle = "#222";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Wing
+  ctx.beginPath();
+  ctx.ellipse(-5, 0, 12, 6, -Math.PI/6, 0, Math.PI*2);
+  ctx.fillStyle = "#ff9900";
+  ctx.fill();
+  ctx.stroke();
+
+  // Eye
+  ctx.beginPath();
+  ctx.arc(7, -5, 8, 0, Math.PI*2);
+  ctx.fillStyle = "#fff";
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(10, -5, 3, 0, Math.PI*2);
+  ctx.fillStyle = "#000";
+  ctx.fill();
+
+  // Beak
+  ctx.beginPath();
+  ctx.moveTo(20, 0);
+  ctx.lineTo(30, -5);
+  ctx.lineTo(30, 5);
+  ctx.closePath();
+  ctx.fillStyle = "#ff6600";
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+// Pipe drawing
+function drawPipe(pipe) {
+  ctx.fillStyle = "#43a047";
+  ctx.fillRect(pipe.x, 0, PIPE_WIDTH, pipe.top);
+  ctx.fillRect(pipe.x, pipe.top + PIPE_GAP, PIPE_WIDTH, canvas.height - pipe.top - PIPE_GAP);
+}
+
+// Collision detection
+function checkCollision(pipe) {
+  const birdRect = { x: 80-BIRD_RADIUS, y: birdY-BIRD_RADIUS, w: BIRD_RADIUS*2, h: BIRD_RADIUS*2 };
+  const topRect = { x: pipe.x, y: 0, w: PIPE_WIDTH, h: pipe.top };
+  const bottomRect = { x: pipe.x, y: pipe.top+PIPE_GAP, w: PIPE_WIDTH, h: canvas.height-(pipe.top+PIPE_GAP) };
+
+  function rectsCollide(a,b) {
+    return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y;
+  }
+
+  return rectsCollide(birdRect, topRect) || rectsCollide(birdRect, bottomRect);
+}
+
+// Reset game
+function reset() {
+  birdY = canvas.height/2;
+  birdV = 0;
+  pipes = [];
+  frame = 0;
+  score = 0;
+  gameOver = false;
+  scoreEl.textContent = score;
+}
+
+// Input
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space' || e.code === 'ArrowUp') flap();
+});
+canvas.addEventListener('mousedown', flap);
+
+function flap() {
+  if (!gameOver) birdV = FLAP;
+  else reset();
+}
+
+// Game loop
+function gameLoop() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  if (!gameOver) {
+    birdV += GRAVITY;
+    birdY += birdV;
+    frame++;
+
+    // Add pipes
+    if (frame % 90 === 0) {
+      let top = Math.random() * (canvas.height - PIPE_GAP - 100) + 50;
+      pipes.push({ x: canvas.width, top: top, passed: false });
+    }
+
+    // Move pipes
+    pipes.forEach(pipe => pipe.x -= 2);
+    pipes = pipes.filter(pipe => pipe.x > -PIPE_WIDTH);
+
+    // Draw pipes and check collisions
+    for (const pipe of pipes) {
+      drawPipe(pipe);
+      if (!pipe.passed && pipe.x + PIPE_WIDTH < 80-BIRD_RADIUS) {
+        score++;
+        pipe.passed = true;
+        scoreEl.textContent = score;
+      }
+      if (checkCollision(pipe)) gameOver = true;
+    }
+
+    // Bird out of bounds
+    if (birdY > canvas.height - BIRD_RADIUS || birdY < BIRD_RADIUS) gameOver = true;
+
+  } else {
+    ctx.fillStyle = "#fff";
+    ctx.font = "bold 48px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Game Over", canvas.width/2, canvas.height/2-40);
+    ctx.font = "28px sans-serif";
+    ctx.fillText("Score: " + score, canvas.width/2, canvas.height/2);
+    ctx.font = "20px sans-serif";
+    ctx.fillText("Press Space or Click to Restart", canvas.width/2, canvas.height/2+40);
+  }
+
+  drawBird(80, birdY);
+  requestAnimationFrame(gameLoop);
+}
+
+reset();
+gameLoop();
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+@import "../common.css";
+#board { display:grid; gap:10px; margin-top:16px; }
+.card {
+  width:86px; height:86px; display:flex; align-items:center; justify-content:center;
+  font-size:32px; border-radius:10px; background:var(--card); cursor:pointer; transition:transform .14s;
+  user-select:none;
+}
+.card:hover { transform: scale(1.06); box-shadow: 0 10px 22px rgba(0,0,0,0.45); }
+.card.revealed { background: linear-gradient(90deg, var(--accent2), var(--accent)); color: #102; font-weight:700; }

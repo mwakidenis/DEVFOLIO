@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Developer Quotes — RecodeHive</title>
+<style>
+:root {
+  --bg-dark1:#0a0f1c; --bg-dark2:#131a2b;
+  --bg-light1:#f0f4f8; --bg-light2:#e0e7ff;
+  --card-dark: rgba(255,255,255,0.06); --card-light: rgba(0,0,0,0.06);
+  --accent1:#06b6d4; --accent2:#7c3aed;
+  --muted-dark:#9aa6b2; --muted-light:#475569;
+  --radius:12px; --font:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+}
+body {margin:0;font-family:var(--font);background:linear-gradient(180deg,var(--bg-dark1),var(--bg-dark2));color:#e6eef6;display:flex;flex-direction:column;min-height:100vh;transition:background 0.4s,color 0.4s;}
+body.light {background:linear-gradient(180deg,var(--bg-light1),var(--bg-light2));color:#1e293b;}
+header{display:flex;flex-direction:column;align-items:center;text-align:center;padding:2rem 1rem 1rem;}
+header .logo{width:60px;height:60px;background:linear-gradient(135deg,var(--accent1),var(--accent2));border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#031028;font-size:1.5rem;box-shadow:0 4px 12px rgba(0,0,0,0.4);}
+header h1{margin:0.5rem 0;font-size:2rem;}
+header p{margin:0;font-size:1rem;opacity:0.85;max-width:600px;}
+header a.devfolio-link{margin-top:0.5rem;color:var(--accent1);text-decoration:none;font-weight:600;}
+header .theme-toggle{margin-top:1rem;padding:.5rem 1rem;border-radius:8px;border:none;cursor:pointer;background:var(--accent1);color:#031028;font-weight:600;transition:transform .2s;}
+header .theme-toggle:hover{transform:translateY(-2px);}
+.app{flex:1;display:flex;justify-content:center;padding:1rem;}
+.layout{display:grid;grid-template-columns:1fr 320px;gap:1rem;width:100%;max-width:980px;}
+@media(max-width:880px){.layout{grid-template-columns:1fr;}}
+.card{background:var(--card-dark);border-radius:var(--radius);padding:1.25rem;min-height:220px;display:flex;flex-direction:column;justify-content:space-between;transition: transform .2s ease, box-shadow .2s ease;border:1px solid rgba(255,255,255,0.03);}
+body.light .card{background:var(--card-light);border:1px solid rgba(0,0,0,0.05);}
+.card.fly{transform:translateY(-6px);box-shadow:0 18px 40px rgba(2,6,23,0.6);}
+.quote-text{font-size:1.05rem;line-height:1.5;margin-bottom:1rem;white-space:pre-wrap;}
+.quote-meta{font-size:.9rem;display:flex;justify-content:space-between;color:var(--muted-dark);}
+body.light .quote-meta{color:var(--muted-light);}
+.tag{padding:.25rem .5rem;border-radius:999px;font-size:.8rem;border:1px solid rgba(255,255,255,0.015);background:rgba(255,255,255,0.03);}
+body.light .tag{background:rgba(0,0,0,0.02);border:1px solid rgba(0,0,0,0.01);}
+aside.side{background:rgba(255,255,255,0.02);border-radius:12px;padding:1rem;border:1px solid rgba(255,255,255,0.03);min-height:220px;display:flex;flex-direction:column;gap:.5rem;}
+body.light aside.side{background:rgba(0,0,0,0.02);border:1px solid rgba(0,0,0,0.03);}
+.btn{padding:.5rem .75rem;border-radius:8px;border:none;cursor:pointer;font-weight:600;background:var(--accent1);color:#031028;transition:transform .2s;}
+.btn:hover{transform:translateY(-2px);}
+.btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.2);color:inherit;}
+body.light .btn.secondary{border:1px solid rgba(0,0,0,0.2);}
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);z-index:60;}
+.modal.show{display:flex;}
+.modal-card{width:100%;max-width:600px;background:#071028;border-radius:12px;padding:1rem;border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;gap:.5rem;}
+body.light .modal-card{background:#e0e7ff;color:#1e293b;border:1px solid rgba(0,0,0,0.05);}
+.field{display:flex;flex-direction:column;gap:.25rem;}
+.field input,.field textarea{padding:.5rem .6rem;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;}
+body.light .field input,body.light .field textarea{border:1px solid rgba(0,0,0,0.2);background:#f0f4f8;color:#1e293b;}
+footer.pixel-footer{height:80px;background-image:url('https://i.imgur.com/pxq3s3K.png');background-size:cover;background-position:bottom;transition:filter 0.4s;}
+body.light footer.pixel-footer{filter:brightness(0.6);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Q</div>
+  <h1>Developer Quotes</h1>
+  <p>Short, wise, and funny quotes for developers — search, filter, copy, or add your own.</p>
+  <a href="https://dev.recodehive.com/devfolio" class="devfolio-link" target="_blank">Visit RecodeHive Devfolio →</a>
+  <button class="theme-toggle" id="themeToggle">Toggle Dark/Light</button>
+</header>
+
+<div class="app">
+  <div class="layout">
+    <main>
+      <article class="card" id="quoteCard">
+        <div class="quote-text" id="quoteText">Loading quotes…</div>
+        <div class="quote-meta">
+          <span id="quoteAuthor">— Author</span>
+          <span class="tag" id="quoteTag">general</span>
+        </div>
+        <div class="card-actions" style="margin-top:.75rem">
+          <button class="btn" id="favoriteBtn">★ Favorite</button>
+          <button class="btn secondary" id="moreBtn">🔍 More</button>
+        </div>
+      </article>
+    </main>
+    <aside class="side">
+      <input id="filterInput" placeholder="Search text, author, or tag">
+      <button class="btn secondary" id="filterBtn">Filter</button>
+      <button class="btn" id="addBtn">＋ Add Quote</button>
+      <div id="quickList" style="margin-top:1rem;"></div>
+      <button id="showAllBtn" class="btn secondary">Show All</button>
+      <button id="clearStorageBtn" class="btn secondary">Clear Local Quotes</button>
+    </aside>
+  </div>
+</div>
+
+<footer class="pixel-footer"></footer>
+
+<div class="modal" id="modal">
+  <div class="modal-card">
+    <h2>Add a New Quote</h2>
+    <div class="field"><label>Quote</label><textarea id="newQuote" rows="3"></textarea></div>
+    <div class="field"><label>Author</label><input id="newAuthor" placeholder="Author name"></div>
+    <div class="field"><label>Tag</label><input id="newTag" placeholder="Tag (e.g. inspiration)"></div>
+    <div style="display:flex;justify-content:flex-end;gap:.5rem;">
+      <button class="btn secondary" id="cancelAdd">Cancel</button>
+      <button class="btn" id="saveAdd">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const defaultQuotes = [
+  {text:"Code is like humor. When you have to explain it, it’s bad.",author:"Cory House",tag:"humor"},
+  {text:"First, solve the problem. Then, write the code.",author:"John Johnson",tag:"advice"},
+  {text:"Talk is cheap. Show me the code.",author:"Linus Torvalds",tag:"action"},
+  {text:"Programs must be written for people to read, and only incidentally for machines to execute.",author:"Harold Abelson",tag:"readability"},
+  {text:"Any fool can write code that a computer can understand. Good programmers write code that humans can understand.",author:"Martin Fowler",tag:"best-practices"},
+  {text:"Experience is the name everyone gives to their mistakes.",author:"Oscar Wilde",tag:"wisdom"},
+  {text:"Simplicity is the soul of efficiency.",author:"Austin Freeman",tag:"simplicity"},
+  {text:"If debugging is the process of removing software bugs, then programming must be the process of putting them in.",author:"Edsger W. Dijkstra",tag:"humor"},
+  {text:"Make it work, make it right, make it fast.",author:"Kent Beck",tag:"process"},
+  {text:"Before software can be reusable it first has to be usable.",author:"Ralph Johnson",tag:"design"},
+  {text:"The best error message is the one that never shows up.",author:"Thomas Fuchs",tag:"ux"},
+  {text:"Code never lies, comments sometimes do.",author:"Ron Jeffries",tag:"advice"},
+  {text:"Deleted code is debugged code.",author:"Jeff Sickel",tag:"humor"},
+  {text:"Programming is thinking, not typing.",author:"Rich Hickey",tag:"wisdom"},
+  {text:"Good code is its own best documentation.",author:"Steve McConnell",tag:"best-practices"},
+  {text:"Premature optimization is the root of all evil.",author:"Donald Knuth",tag:"advice"},
+  {text:"Simplicity is prerequisite for reliability.",author:"Edsger W. Dijkstra",tag:"simplicity"},
+  {text:"Walking on water and developing software from a specification are easy if both are frozen.",author:"Edward V. Berard",tag:"humor"},
+  {text:"Deleted code is debugged code.",author:"Jeff Sickel",tag:"humor"},
+  {text:"Code is like poetry.",author:"Automattic",tag:"wisdom"},
+  {text:"First, solve the problem. Then, write the code.",author:"John Johnson",tag:"advice"},
+  {text:"Talk is cheap. Show me the code.",author:"Linus Torvalds",tag:"action"},
+  {text:"Debugging is twice as hard as writing the code in the first place.",author:"Brian Kernighan",tag:"humor"},
+  {text:"Optimism is an occupational hazard of programming.",author:"Kent Beck",tag:"humor"},
+  {text:"Testing leads to failure, and failure leads to understanding.",author:"Burt Rutan",tag:"wisdom"},
+  {text:"Programs must be written for people to read.",author:"Harold Abelson",tag:"readability"},
+  {text:"Good programmers write code that humans can understand.",author:"Martin Fowler",tag:"best-practices"},
+  {text:"Experience is the name everyone gives to their mistakes.",author:"Oscar Wilde",tag:"wisdom"},
+  {text:"Code is like humor.",author:"Cory House",tag:"humor"},
+  {text:"The most disastrous thing that you can ever learn is your first programming language.",author:"Alan Kay",tag:"humor"},
+  {text:"Make it work, make it right, make it fast.",author:"Kent Beck",tag:"process"},
+  {text:"Before software can be reusable it first has to be usable.",author:"Ralph Johnson",tag:"design"},
+  {text:"Talk is cheap. Show me the code.",author:"Linus Torvalds",tag:"action"},
+  {text:"Programs must be written for people to read.",author:"Harold Abelson",tag:"readability"},
+  {text:"Good code is its own best documentation.",author:"Steve McConnell",tag:"best-practices"},
+  {text:"Premature optimization is the root of all evil.",author:"Donald Knuth",tag:"advice"},
+  {text:"Simplicity is prerequisite for reliability.",author:"Edsger W. Dijkstra",tag:"simplicity"},
+  {text:"Deleted code is debugged code.",author:"Jeff Sickel",tag:"humor"},
+  {text:"Programming is thinking, not typing.",author:"Rich Hickey",tag:"wisdom"},
+  {text:"Walking on water and developing software from a specification are easy if both are frozen.",author:"Edward V. Berard",tag:"humor"},
+  {text:"Optimism is an occupational hazard of programming.",author:"Kent Beck",tag:"humor"},
+  {text:"Testing leads to failure, and failure leads to understanding.",author:"Burt Rutan",tag:"wisdom"},
+  {text:"Code never lies, comments sometimes do.",author:"Ron Jeffries",tag:"advice"},
+  {text:"Deleted code is debugged code.",author:"Jeff Sickel",tag:"humor"},
+  {text:"Code is like poetry.",author:"Automattic",tag:"wisdom"},
+  {text:"Debugging is twice as hard as writing the code in the first place.",author:"Brian Kernighan",tag:"humor"},
+  {text:"Make it work, make it right, make it fast.",author:"Kent Beck",tag:"process"},
+  {text:"First, solve the problem. Then, write the code.",author:"John Johnson",tag:"advice"},
+  {text:"Simplicity is the soul of efficiency.",author:"Austin Freeman",tag:"simplicity"},
+  {text:"Experience is the name everyone gives to their mistakes.",author:"Oscar Wilde",tag:"wisdom"},
+  {text:"If debugging is the process of removing software bugs, then programming must be the process of putting them in.",author:"Edsger W. Dijkstra",tag:"humor"},
+  {text:"Before software can be reusable it first has to be usable.",author:"Ralph Johnson",tag:"design"},
+  {text:"The best error message is the one that never shows up.",author:"Thomas Fuchs",tag:"ux"},
+];
+
+let quotes = [...defaultQuotes], index = 0, favorites = [], isAuto=false, autoInterval=null;
+
+const quoteText = document.getElementById('quoteText');
+const quoteAuthor = document.getElementById('quoteAuthor');
+const quoteTag = document.getElementById('quoteTag');
+const favoriteBtn = document.getElementById('favoriteBtn');
+const moreBtn = document.getElementById('moreBtn');
+const filterBtn = document.getElementById('filterBtn');
+const filterInput = document.getElementById('filterInput');
+const addBtn = document.getElementById('addBtn');
+const modal = document.getElementById('modal');
+const cancelAdd = document.getElementById('cancelAdd');
+const saveAdd = document.getElementById('saveAdd');
+const newQuote = document.getElementById('newQuote');
+const newAuthor = document.getElementById('newAuthor');
+const newTag = document.getElementById('newTag');
+const quickList = document.getElementById('quickList');
+const showAllBtn = document.getElementById('showAllBtn');
+const clearStorageBtn = document.getElementById('clearStorageBtn');
+const themeToggle = document.getElementById('themeToggle');
+
+function render() {
+  const q = quotes[index];
+  if(!q) return;
+  quoteText.textContent=q.text;
+  quoteAuthor.textContent=q.author ? '— '+q.author:'— Unknown';
+  quoteTag.textContent=q.tag || 'general';
+  favoriteBtn.textContent=favorites.includes(index)?'★ Favorited':'★ Favorite';
+  buildQuickList();
+}
+
+function buildQuickList() {
+  quickList.innerHTML='';
+  favorites.slice(-6).reverse().forEach(i=>{
+    const q = quotes[i];
+    if(!q) return;
+    const btn = document.createElement('button');
+    btn.textContent=q.text.length>50?q.text.slice(0,50)+'…':q.text;
+    btn.className='btn secondary';
+    btn.onclick=()=>{index=i;render();}
+    quickList.appendChild(btn);
+  });
+}
+
+function toggleFavorite(){
+  const pos=favorites.indexOf(index);
+  if(pos===-1){favorites.push(index);}
+  else{favorites.splice(pos,1);}
+  render();
+  localStorage.setItem('quotes_fav',JSON.stringify(favorites));
+}
+
+function moreLikeThis(){
+  const curTag = quotes[index].tag;
+  const similar = quotes.filter((q,i)=>q.tag===curTag && i!==index);
+  if(similar.length) index = quotes.indexOf(similar[0]);
+  render();
+}
+
+function filterQuotes(){
+  const term=(filterInput.value||'').toLowerCase();
+  const found = quotes.find(q=>q.text.toLowerCase().includes(term)|| (q.author||'').toLowerCase().includes(term)|| (q.tag||'').toLowerCase().includes(term));
+  if(found) index = quotes.indexOf(found);
+  render();
+}
+
+function showAddModal(){modal.classList.add('show'); newQuote.focus();}
+function closeAddModal(){modal.classList.remove('show'); newQuote.value=''; newAuthor.value=''; newTag.value='';}
+function saveAddQuote(){
+  const text=newQuote.value.trim();
+  if(!text){alert('Enter quote');return;}
+  const author=newAuthor.value.trim();
+  const tag=newTag.value.trim()||'user';
+  quotes.push({text,author,tag});
+  localStorage.setItem('quotes_custom',JSON.stringify(quotes.slice(defaultQuotes.length)));
+  index = quotes.length-1;
+  closeAddModal();
+  render();
+}
+
+addBtn.onclick=showAddModal;
+cancelAdd.onclick=closeAddModal;
+saveAdd.onclick=saveAddQuote;
+favoriteBtn.onclick=toggleFavorite;
+moreBtn.onclick=moreLikeThis;
+filterBtn.onclick=filterQuotes;
+showAllBtn.onclick=()=>{quotes=[...defaultQuotes,...JSON.parse(localStorage.getItem('quotes_custom')||'[]')];index=0;render();}
+clearStorageBtn.onclick=()=>{localStorage.removeItem('quotes_custom');localStorage.removeItem('quotes_fav');quotes=[...defaultQuotes];index=0;favorites=[];render();}
+themeToggle.onclick=()=>{document.body.classList.toggle('light');}
+document.addEventListener('keydown',e=>{if(e.key==='n'){index=(index+1)%quotes.length;render();} if(e.key==='p'){index=(index-1+quotes.length)%quotes.length;render();} if(e.key==='r'){index=Math.floor(Math.random()*quotes.length);render();} if(e.key==='a'){showAddModal();}});
+render();
+</script>
+
+</body>
+</html>
